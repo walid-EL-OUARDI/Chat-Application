@@ -14,3 +14,25 @@ export interface UserRegisterData {
   password: string;
   password_confirmation: string;
 }
+
+export interface ChatRoom {
+  id: number;
+  users: User[];
+  name: string;
+  last_message: {
+    id: number;
+    sender: User;
+    content: string;
+    created_at: string;
+    image_url?: string;
+  };
+  messages?: Message[];
+}
+
+export interface Message {
+  id: number;
+  sender: User;
+  content: string;
+  created_at: string;
+  image_url?: string;
+}

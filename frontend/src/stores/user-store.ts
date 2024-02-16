@@ -11,7 +11,9 @@ export const useUserStore = defineStore('user', {
   state: (): UserState => {
     const userInLovaleStorage = localStorage.getItem('user');
     if (userInLovaleStorage) {
-      return JSON.parse(userInLovaleStorage);
+      return {
+        user: JSON.parse(userInLovaleStorage),
+      };
     }
     return { user: {} as User };
   },
