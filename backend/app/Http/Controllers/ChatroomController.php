@@ -22,6 +22,7 @@ class ChatroomController extends Controller
         return response()->json(['chatroom' => $chatroom], 201);
     }
 
+
     public function addUsersToChatroom(Request $request, Chatroom $chatroom)
     {
         $validated = $request->validate([
@@ -45,12 +46,44 @@ class ChatroomController extends Controller
             'chatrooms' => ChatroomResource::collection($chatrooms),
         ], 200);
     }
+
+
     public function deleteChatroom(Chatroom $chatroom)
     {
         $chatroom->delete();
 
         return response()->json([
             'message' => 'Chatroom deleted successfully!',
+        ], 200);
+    }
+
+
+    public function getChatRoomById(Chatroom $chatroom)
+    {
+        // get chatroom by id with its messages and users
+        $chatroom = $chatroom->load('users');
+
+        return response()->json([
+            'chatroom' => new ChatroomResource($chatroom)
+        ], 200);
+    }
+
+    public function updateChatroom(Request $request, Chatroom $chatroom)
+    {
+
+        $validated = $request->validate([
+            // alow the name to be the same as it was before
+            'room_name' => 'required|max:255|unique:chatrooms,name,' . $chatroom->id,
+            'user_ids' => 'required|array|exists:users,id',
+        ]);
+
+        $validated['user_ids'][] = auth()->user()->id;
+        $chatroom->users()->sync($validated['user_ids']);
+        $chatroom->update(['name' => $validated['room_name']]);
+        $chatroom = $chatroom->load('users');
+
+        return response()->json([
+            'chatroom' => new ChatroomResource($chatroom)
         ], 200);
     }
 }

@@ -90,7 +90,6 @@ import { useUserStore } from '../stores/user-store';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { url } from '../helpers/index';
-import { api } from 'boot/axios';
 
 const router = useRouter();
 const userStore = useUserStore();

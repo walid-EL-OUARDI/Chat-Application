@@ -61,5 +61,17 @@ export const useUserStore = defineStore('user', {
           throw err;
         });
     },
+
+    async searchUsers(query: string) {
+      try {
+        const response: AxiosResponse<{ users: User[] }> = await api.get(
+          '/search/users',
+          { params: { query } }
+        );
+        return response.data.users;
+      } catch (err) {
+        throw err;
+      }
+    },
   },
 });

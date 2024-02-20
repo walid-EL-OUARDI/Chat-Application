@@ -1,6 +1,10 @@
 <template>
   <div style="height: 100vh">
     <AddChatRoomDialog />
+    <UpdateChatRoomDialog
+      v-if="roomToUpdateId"
+      :roomToUpdateId="roomToUpdateId"
+    />
     <div class="row" style="height: 100%">
       <div>
         <div class="text-h4 text-greay-9 q-my-md q-mx-md">
@@ -18,12 +22,23 @@
         <q-scroll-area style="height: 80%">
           <q-list padding>
             <q-item
-              v-for="n in 6"
-              :key="n"
+              v-for="(room, index) in rooms"
+              :key="index"
               class="q-my-sm q-my-lg"
               clickable
               v-ripple
             >
+              <q-menu transition-show="scale" transition-hide="scale">
+                <q-item clickable>
+                  <q-item-section>Go to room</q-item-section>
+                </q-item>
+                <q-item clickable @click="toggleUpdateRoomDialog(room.id)">
+                  <q-item-section>Update Room</q-item-section>
+                </q-item>
+                <q-item clickable @click="deleteRoom(room.id)">
+                  <q-item-section>Delete Room</q-item-section>
+                </q-item>
+              </q-menu>
               <div
                 class="text-subtitle2 row justify-center"
                 :style="{
@@ -33,23 +48,23 @@
                 }"
               >
                 <q-avatar
-                  v-for="n in 3"
-                  :key="n"
+                  v-for="(user, index) in room.users"
+                  :key="user.id"
                   color="primary"
                   size="50px"
                   text-color="white"
                   class="overlapping"
-                  :style="`left: ${n * 25}px`"
+                  :style="`left: ${index * 25}px`"
                 >
-                  <img v-if="image" :src="image" />
-                  <q-icon v-else name="person" />
+                  <!-- <img v-if="image" :src="image" /> -->
+                  <q-icon name="person" />
                 </q-avatar>
               </div>
               <q-item-section class="q-ml-md">
                 <q-item-label
                   class="text-grey-9 row items-center text-weight-bold"
                   >Room Name :
-                  <div class="text-body2 q-ml-xs">room name</div>
+                  <div class="text-body2 q-ml-xs">{{ room.name }}</div>
                 </q-item-label>
                 <q-item-label class="text-grey-8">
                   No messages yet
@@ -67,9 +82,46 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { useRoomStore } from '../stores/room-store';
 import AddChatRoomDialog from './AddChatRoomDialog.vue';
+import UpdateChatRoomDialog from './UpdateChatRoomDialog.vue';
+import { storeToRefs } from 'pinia';
 const roomStore = useRoomStore();
+import { useQuasar } from 'quasar';
+const $q = useQuasar();
+
+const roomToUpdateId = ref<number>();
+
+onMounted(async () => {
+  await roomStore.getRooms();
+  console.log(rooms.value);
+});
+
+const { rooms } = storeToRefs(roomStore);
+
+const toggleUpdateRoomDialog = async (roomId: number) => {
+  // roomToUpdateId.value = 0;
+  roomToUpdateId.value = roomId;
+  console.log(roomToUpdateId.value);
+
+  roomStore.toggleUpdateRoomDialog();
+};
+
+const deleteRoom = async (roomId: number) => {
+  try {
+    await roomStore.deleteRoom(roomId);
+    $q.notify({
+      message: 'Chatroom deleted successfully',
+      color: 'positive',
+    });
+  } catch (err: any) {
+    $q.notify({
+      message: err.response.data.message,
+      color: 'negative',
+    });
+  }
+};
 </script>
 
 <style scoped>
