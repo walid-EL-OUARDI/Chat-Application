@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { api } from 'boot/axios';
-import { ChatRoom, Message } from 'src/types/index';
+import { ChatRoom } from 'src/types/index';
 import { AxiosResponse } from 'axios';
 
 interface RoomState {

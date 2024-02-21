@@ -49,12 +49,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Chatroom::class);
     }
-    // public function messages()
-    // {
-    //     return $this->hasMany(Messages::class);
-    // }
-    // public function lastMessage()
-    // {
-    //     return $this->hasOne(Message::class)->latest();
-    // }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
+
+    public function lastMessage()
+    {
+        return $this->hasOne(Message::class)->latest();
+    }
 }
