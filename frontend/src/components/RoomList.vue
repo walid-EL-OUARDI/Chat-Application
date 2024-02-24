@@ -1,11 +1,11 @@
 <template>
-  <div style="height: 100vh">
+  <div style="height: 100vh; width: 100%">
     <AddChatRoomDialog />
     <UpdateChatRoomDialog
       v-if="roomToUpdateId"
       :roomToUpdateId="roomToUpdateId"
     />
-    <div class="row" style="height: 100%">
+    <div class="row" style="height: 100%; width: 100%">
       <div>
         <div class="text-h4 text-greay-9 q-my-md q-mx-md">
           Chat Rooms
@@ -30,7 +30,9 @@
             >
               <q-menu transition-show="scale" transition-hide="scale">
                 <q-item clickable>
-                  <q-item-section>Go to room</q-item-section>
+                  <q-item-section @click="goToRoom(room.id)"
+                    >Go to room</q-item-section
+                  >
                 </q-item>
                 <q-item clickable @click="toggleUpdateRoomDialog(room.id)">
                   <q-item-section>Update Room</q-item-section>
@@ -74,15 +76,16 @@
           </q-list>
         </q-scroll-area>
       </div>
-      <!-- <div>
-      <router-view />
-    </div> -->
+      <div class="chat-window">
+        <router-view />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeMount } from 'vue';
+import { useRouter } from 'vue-router';
 import { useRoomStore } from '../stores/room-store';
 import AddChatRoomDialog from './AddChatRoomDialog.vue';
 import UpdateChatRoomDialog from './UpdateChatRoomDialog.vue';
@@ -90,10 +93,11 @@ import { storeToRefs } from 'pinia';
 const roomStore = useRoomStore();
 import { useQuasar } from 'quasar';
 const $q = useQuasar();
+const router = useRouter();
 
 const roomToUpdateId = ref<number>();
 
-onMounted(async () => {
+onBeforeMount(async () => {
   await roomStore.getRooms();
   console.log(rooms.value);
 });
@@ -106,6 +110,10 @@ const toggleUpdateRoomDialog = async (roomId: number) => {
   console.log(roomToUpdateId.value);
 
   roomStore.toggleUpdateRoomDialog();
+};
+
+const goToRoom = async (roomId: number) => {
+  router.push(`/rooms/${roomId}/messages`);
 };
 
 const deleteRoom = async (roomId: number) => {
@@ -128,5 +136,9 @@ const deleteRoom = async (roomId: number) => {
 .overlapping {
   border: 2px solid white;
   position: absolute;
+}
+
+.chat-window {
+  flex-grow: 1;
 }
 </style>

@@ -15,24 +15,18 @@ export interface UserRegisterData {
   password_confirmation: string;
 }
 
-export interface ChatRoom {
-  id: number;
-  users: User[];
-  name: string;
-  last_message: {
-    id: number;
-    sender: User;
-    content: string;
-    created_at: string;
-    image_url?: string;
-  };
-  messages?: Message[];
-}
-
 export interface Message {
   id: number;
   sender: User;
   content: string;
   created_at: string;
   image_url?: string;
+}
+
+export interface ChatRoom {
+  id: number;
+  users: User[];
+  name: string;
+  last_message: Message;
+  messages?: Message[];
 }

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { api } from 'boot/axios';
-import { ChatRoom } from 'src/types/index';
+import { ChatRoom, Message } from 'src/types/index';
 import { AxiosResponse } from 'axios';
 
 interface RoomState {
@@ -53,6 +53,18 @@ export const useRoomStore = defineStore('room', {
       }
     },
 
+    async getRoomById(roomId: number) {
+      try {
+        const response: AxiosResponse<{ chatroom: ChatRoom }> = await api.get(
+          `/chatrooms/${roomId}`
+        );
+        this.room = response.data.chatroom;
+        // return response.data;
+      } catch (err) {
+        throw err;
+      }
+    },
+
     // async getMessagesOfRoom(roomId: number) {
     //   try {
     //     const response: AxiosResponse<{ messages: Message[] }> = await api.get(
@@ -68,24 +80,24 @@ export const useRoomStore = defineStore('room', {
     //   }
     // },
 
-    // async sendMessage(messageData: FormData, roomId: number) {
-    //   try {
-    //     const response = await api.post(
-    //       '/chatrooms/' + roomId + '/messages',
-    //       messageData
-    //     );
+    async sendMessage(messageData: FormData, roomId: number) {
+      try {
+        const response: AxiosResponse<{ message: Message }> = await api.post(
+          '/chatroom/' + roomId + '/messages',
+          messageData
+        );
 
-    //     const chatroomIndex = this.rooms.findIndex(
-    //       (room) => room.id === roomId
-    //     );
-    //     this.rooms[chatroomIndex].last_message = response.data.message;
-    //     if (this.room?.messages) {
-    //       this.room.messages.push(response.data.message);
-    //     }
-    //   } catch (err) {
-    //     throw err;
-    //   }
-    // },
+        const chatroomIndex = this.rooms.findIndex(
+          (room) => room.id === roomId
+        );
+        this.rooms[chatroomIndex].last_message = response.data.message;
+        if (this.room?.messages) {
+          this.room.messages.push(response.data.message);
+        }
+      } catch (err) {
+        throw err;
+      }
+    },
 
     async deleteRoom(roomId: number) {
       try {

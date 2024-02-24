@@ -64,7 +64,7 @@ class ChatroomController extends Controller
         $chatroom = $chatroom->load('users');
 
         return response()->json([
-            'chatroom' => new ChatroomResource($chatroom)
+            'chatroom' => new ChatroomResource($chatroom->load('messages'))
         ], 200);
     }
 

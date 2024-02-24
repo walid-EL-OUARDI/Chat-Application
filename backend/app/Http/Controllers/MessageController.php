@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
+use App\Events\UserIsTyping;
 use App\Http\Resources\MessageResource;
 use App\Models\Chatroom;
 use Illuminate\Http\Request;
@@ -27,6 +29,7 @@ class MessageController extends Controller
                 'user_id' => auth()->user()->id
             ]);
 
+            broadcast(new MessageSent(new MessageResource($message->load('user'))))->toOthers();
             return response()->json([
                 'message' =>  new MessageResource($message->load('user'))
             ]);
@@ -36,8 +39,20 @@ class MessageController extends Controller
             'content' => $validated['content'],
             'user_id' => auth()->user()->id
         ]);
+
+        broadcast(new MessageSent(new MessageResource($message->load('user'))))->toOthers();
         return response()->json([
             'message' =>  new MessageResource($message->load('user'))
         ]);
+    }
+
+    public function userIsTyping(Request $request, Chatroom $chatroom)
+    {
+        broadcast(new UserIsTyping($request->user()->name, $chatroom->id))->toOthers();
+    }
+
+    public function userStoppedTyping(Request $request, Chatroom $chatroom)
+    {
+        broadcast(new UserIsTyping($request->user()->name, $chatroom->id))->toOthers();
     }
 }

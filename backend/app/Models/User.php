@@ -59,4 +59,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Message::class)->latest();
     }
+
+    public function isInRoom($roomId)
+    {
+        return $this->chatrooms()->where('chatroom_id', $roomId)->exists();
+    }
 }
