@@ -1,5 +1,6 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
+import { echo } from './echo';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -19,8 +20,9 @@ const api = axios.create({ baseURL: process.env.VUE_APP_API_URL });
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers['Authorization'] = `Bearer ${token}`;
   }
+  config.headers['X-Socket-Id'] = echo.socketId();
   return config;
 });
 export default boot(({ app }) => {

@@ -33,7 +33,11 @@
       </div>
     </div>
 
-    <q-scroll-area style="height: 60vh; width: 100%" class="q-px-md">
+    <q-scroll-area
+      style="height: 60vh; width: 100%"
+      class="q-px-md"
+      ref="messageContainer"
+    >
       <transition-group
         appear
         enter-active-class="animated fadeInLeft"
@@ -42,13 +46,14 @@
         <q-chat-message
           v-for="message in room.messages"
           :key="message.id"
-          :avatar="
-            message.sender?.avatar_url ? message.sender.avatar_url : undefined
+          avatar="
+            https://cdn.quasar.dev/img/avatar1.jpg
           "
           :name="message.sender?.name"
           :sent="message.sender?.id === user.id"
           :bg-color="message.sender?.name === user.name ? 'primary' : 'grey-4'"
           :text-color="message.sender?.name === user.name ? 'white' : 'black'"
+          :stamp="message.created_at"
         >
           <div>
             <div class="">
@@ -68,6 +73,7 @@
         <div class="col-8">
           <q-input
             @keyup="onKeyup"
+            @keyup.enter="sendMessage"
             v-model="messageText"
             dense
             outlined
@@ -109,12 +115,14 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useQuasar } from 'quasar';
+import { QScrollArea, useQuasar } from 'quasar';
 import { url } from 'src/helpers';
+import { echo } from 'src/boot/echo';
 import { useRoomStore } from 'src/stores/room-store';
 import { useUserStore } from 'src/stores/user-store';
 import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { User } from 'src/types';
 const router = useRouter();
 const roomStore = useRoomStore();
 const userStore = useUserStore();
@@ -125,6 +133,7 @@ const { user } = storeToRefs(userStore);
 const imageUploader = ref<HTMLInputElement>();
 const selectedImage = ref<File>();
 const messageText = ref<string>('');
+const messageContainer = ref<QScrollArea | null>(null);
 
 const chatroomId = computed<number>(() =>
   Number(router.currentRoute.value.params.roomId)
@@ -132,15 +141,19 @@ const chatroomId = computed<number>(() =>
 
 onBeforeMount(async () => {
   await roomStore.getRoomById(chatroomId.value);
+  setUpListners(chatroomId.value);
+  scrollToBottom();
   // console.log(chatroomId.value);
 });
 // console.log(chatroomId.value);
 
 watch(chatroomId, async () => {
   await roomStore.getRoomById(chatroomId.value);
+  scrollToBottom();
 });
 const triggerImageUpload = () => {
   imageUploader.value?.click();
+  // console.log(imageUploader);
 };
 
 const handleImageUpload = (event: Event) => {
@@ -162,6 +175,7 @@ const sendMessage = async () => {
       imageUploader.value.value = '';
     }
     selectedImage.value = undefined;
+    scrollToBottom();
   } catch (error) {
     $q.notify({
       message: 'Error sending message',
@@ -169,6 +183,38 @@ const sendMessage = async () => {
       icon: 'error',
     });
   }
+};
+
+const setUpListners = (roomId: string | number) => {
+  echo
+    .join(`chatroom.${roomId}`)
+    .here((users: User[]) => {
+      console.log(users);
+    })
+    .joining((user: User) => {
+      console.log(user.name);
+    })
+    .leaving((user: User) => {
+      console.log(user.name);
+    })
+    .listen('MessageSent', (e) => {
+      console.log(e);
+      roomStore.addMessage(e.message, chatroomId.value);
+      scrollToBottom;
+    })
+    .error((error) => {
+      console.error(error);
+    });
+};
+
+const scrollToBottom = () => {
+  if (!messageContainer.value) {
+    return;
+  }
+  const scrollTarget = messageContainer.value.getScrollTarget();
+  const scrollHeight = scrollTarget.scrollHeight;
+  messageContainer.value?.setScrollPosition('vertical', scrollHeight);
+  // console.log(messageContainer.value.getScrollTarget().scrollHeight);
 };
 </script>
 

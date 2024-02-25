@@ -99,6 +99,14 @@ export const useRoomStore = defineStore('room', {
       }
     },
 
+    addMessage(message: Message, roomId: number) {
+      if (this.room?.messages) {
+        this.room.messages.push(message);
+      }
+      const index = this.rooms.findIndex((room) => room.id === roomId);
+      this.rooms[index].last_message = message;
+    },
+
     async deleteRoom(roomId: number) {
       try {
         await api.delete('/chatrooms/' + roomId);

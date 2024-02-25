@@ -61,10 +61,10 @@ class ChatroomController extends Controller
     public function getChatRoomById(Chatroom $chatroom)
     {
         // get chatroom by id with its messages and users
-        $chatroom = $chatroom->load('users');
+        $chatroom = $chatroom->load(['users', 'messages']);
 
         return response()->json([
-            'chatroom' => new ChatroomResource($chatroom->load('messages'))
+            'chatroom' => new ChatroomResource($chatroom)
         ], 200);
     }
 
@@ -80,7 +80,7 @@ class ChatroomController extends Controller
         $validated['user_ids'][] = auth()->user()->id;
         $chatroom->users()->sync($validated['user_ids']);
         $chatroom->update(['name' => $validated['room_name']]);
-        $chatroom = $chatroom->load('users');
+        $chatroom = $chatroom->load(['users', 'messages']);
 
         return response()->json([
             'chatroom' => new ChatroomResource($chatroom)
