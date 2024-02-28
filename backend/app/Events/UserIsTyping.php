@@ -10,18 +10,20 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserIsTyping
+class UserIsTyping implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $userName;
+    public $userAvatarUrl;
     public $roomId;
     /**
      * Create a new event instance.
      */
-    public function __construct($userName, $roomId)
+    public function __construct($userName, $userAvatarUrl, $roomId)
     {
         $this->userName = $userName;
+        $this->userAvatarUrl = $userAvatarUrl;
         $this->roomId = $roomId;
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
 use App\Events\UserIsTyping;
+use App\Events\UserStoppedTyping;
 use App\Http\Resources\MessageResource;
 use App\Models\Chatroom;
 use Illuminate\Http\Request;
@@ -48,11 +49,11 @@ class MessageController extends Controller
 
     public function userIsTyping(Request $request, Chatroom $chatroom)
     {
-        broadcast(new UserIsTyping($request->user()->name, $chatroom->id))->toOthers();
+        broadcast(new UserIsTyping($request->user()->name, $request->user()->avatat_url, $chatroom->id))->toOthers();
     }
 
     public function userStoppedTyping(Request $request, Chatroom $chatroom)
     {
-        broadcast(new UserIsTyping($request->user()->name, $chatroom->id))->toOthers();
+        broadcast(new UserStoppedTyping($request->user()->name, $chatroom->id))->toOthers();
     }
 }

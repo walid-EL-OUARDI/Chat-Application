@@ -65,6 +65,35 @@
               class="chat-image"
             /></div
         ></q-chat-message>
+
+        <!-- typing indicator -->
+        <div v-if="usersTyping.length > 0">
+          <q-chat-message
+            :bg-color="true ? 'grey-4' : ''"
+            v-for="(user, index) in usersTyping"
+            :key="index"
+          >
+            <template v-slot:name>{{ (user[0], user[1]) }}</template>
+            <template v-slot:avatar>
+              <img
+                v-if="user[1]"
+                class="q-message-avatar q-message-avatar--received"
+                :src="user[1]"
+              />
+              <q-avatar
+                v-else
+                size="50px"
+                :color="true ? 'grey-4' : ''"
+                text-color="black"
+                class="q-mr-sm"
+              >
+                <q-icon name="person" />
+              </q-avatar>
+            </template>
+
+            <q-spinner-dots size="2rem" />
+          </q-chat-message>
+        </div>
       </transition-group>
     </q-scroll-area>
 
@@ -120,9 +149,10 @@ import { url } from 'src/helpers';
 import { echo } from 'src/boot/echo';
 import { useRoomStore } from 'src/stores/room-store';
 import { useUserStore } from 'src/stores/user-store';
-import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { User } from 'src/types';
+import { Message, User } from 'src/types';
+import { api } from 'src/boot/axios';
 const router = useRouter();
 const roomStore = useRoomStore();
 const userStore = useUserStore();
@@ -134,22 +164,33 @@ const imageUploader = ref<HTMLInputElement>();
 const selectedImage = ref<File>();
 const messageText = ref<string>('');
 const messageContainer = ref<QScrollArea | null>(null);
+const isTyping = ref<boolean>(false);
+const usersTyping = ref<string[][]>([]);
+let typingTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const chatroomId = computed<number>(() =>
   Number(router.currentRoute.value.params.roomId)
 );
 
-onBeforeMount(async () => {
+onMounted(async () => {
   await roomStore.getRoomById(chatroomId.value);
-  setUpListners(chatroomId.value);
+  setUpListeners(chatroomId.value);
   scrollToBottom();
   // console.log(chatroomId.value);
 });
+
+onUnmounted(() => {
+  echo.leave(`chatroom.${chatroomId.value}`);
+});
 // console.log(chatroomId.value);
 
-watch(chatroomId, async () => {
-  await roomStore.getRoomById(chatroomId.value);
-  scrollToBottom();
+watch(chatroomId, async (oldRoomId, newRoomId) => {
+  if (oldRoomId !== newRoomId) {
+    echo.leave(`chatroom.${oldRoomId}`);
+    setUpListeners(Number(newRoomId));
+    await roomStore.getRoomById(chatroomId.value);
+    scrollToBottom();
+  }
 });
 const triggerImageUpload = () => {
   imageUploader.value?.click();
@@ -185,36 +226,104 @@ const sendMessage = async () => {
   }
 };
 
-const setUpListners = (roomId: string | number) => {
+const setUpListeners = (roomId: string | number) => {
   echo
     .join(`chatroom.${roomId}`)
     .here((users: User[]) => {
       console.log(users);
     })
     .joining((user: User) => {
-      console.log(user.name);
+      $q.notify({
+        message: `${user.name} has joined the room`,
+        color: 'green',
+        icon: 'person_add',
+      });
     })
     .leaving((user: User) => {
-      console.log(user.name);
+      $q.notify({
+        message: `${user.name} has left the room`,
+        color: 'red',
+        icon: 'person_remove',
+      });
     })
-    .listen('MessageSent', (e) => {
-      console.log(e);
+    .listen('MessageSent', (e: { message: Message }) => {
+      // console.log(e);
       roomStore.addMessage(e.message, chatroomId.value);
-      scrollToBottom;
+      scrollToBottom();
     })
     .error((error) => {
       console.error(error);
     });
+
+  echo
+    .private(`chatroom.${roomId}`)
+    .listen(
+      'UserIsTyping',
+      (e: { userName: string; userAvatarUrl: string; roomId: number }) => {
+        const index = usersTyping.value.findIndex(
+          (user) => user[0] === e.userName
+        );
+        if (index === -1) {
+          usersTyping.value.push([e.userName, e.userAvatarUrl]);
+          scrollToBottom();
+          console.log(usersTyping.value);
+        }
+      }
+    );
+
+  echo
+    .private(`chatroom.${roomId}`)
+    .listen(
+      'UserStoppedTyping',
+      (e: { userName: string; userAvatarUrl: string; roomId: number }) => {
+        console.log(usersTyping.value);
+        const index = usersTyping.value.findIndex(
+          (user) => user[0] === e.userName
+        );
+        console.log(index);
+
+        // scrollToBottom();
+        if (index > -1) {
+          usersTyping.value.splice(index, 1);
+          console.log(usersTyping.value);
+        }
+      }
+    );
+};
+
+const onKeyup = () => {
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+  }
+  typingTimeout = setTimeout(() => {
+    emitUserStoppedTyping();
+    console.log('user stopped typing');
+  }, 2000);
+
+  if (!isTyping.value) {
+    emitUserIsTyping();
+    console.log('user is typing');
+  }
+};
+
+const emitUserIsTyping = async () => {
+  isTyping.value = true;
+  await api.post('/chatrooms/' + chatroomId.value + '/user-is-typing');
+};
+
+const emitUserStoppedTyping = async () => {
+  isTyping.value = false;
+  await api.post('/chatrooms/' + chatroomId.value + '/user-stopped-typing');
 };
 
 const scrollToBottom = () => {
+  console.log(messageContainer.value?.getScrollTarget());
   if (!messageContainer.value) {
     return;
   }
   const scrollTarget = messageContainer.value.getScrollTarget();
   const scrollHeight = scrollTarget.scrollHeight;
-  messageContainer.value?.setScrollPosition('vertical', scrollHeight);
-  // console.log(messageContainer.value.getScrollTarget().scrollHeight);
+  messageContainer.value.setScrollPosition('vertical', scrollHeight);
 };
 </script>
 
@@ -244,4 +353,5 @@ const scrollToBottom = () => {
   border: 2px solid white;
   position: absolute;
 }
+
 </style>

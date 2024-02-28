@@ -10,19 +10,19 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserStoppedTyping
+class UserStoppedTyping implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $username;
+    public $userName;
     public $roomId;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($username, $roomId)
+    public function __construct($userName, $roomId)
     {
-        $this->username = $username;
+        $this->userName = $userName;
         $this->roomId = $roomId;
     }
 
