@@ -18,7 +18,7 @@ class ChatroomResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'users' => $this->whenLoaded('users'),
-            // 'last_message' => $this->whenLoaded('lastMessage'),
+            'last_message' => $this->whenLoaded('lastMessage'),
             'messages' => MessageResource::collection($this->whenLoaded('messages')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

@@ -40,7 +40,7 @@ class ChatroomController extends Controller
 
     public function getChatrooms()
     {
-        $chatrooms = auth()->user()->chatrooms()->with('users')->get();
+        $chatrooms = auth()->user()->chatrooms()->with(['users', 'lastMessage'])->get();
 
         return response()->json([
             'chatrooms' => ChatroomResource::collection($chatrooms),

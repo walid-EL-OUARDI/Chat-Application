@@ -8,6 +8,7 @@ interface RoomState {
   room: ChatRoom | null;
   showUpdateRoomDialog: boolean;
   showAddRoomDialog: boolean;
+  showUpdateUserProfileDialog: boolean;
 }
 
 export const useRoomStore = defineStore('room', {
@@ -17,6 +18,7 @@ export const useRoomStore = defineStore('room', {
       room: null,
       showUpdateRoomDialog: false,
       showAddRoomDialog: false,
+      showUpdateUserProfileDialog: false,
     };
   },
 
@@ -27,6 +29,9 @@ export const useRoomStore = defineStore('room', {
     },
     toggleUpdateRoomDialog() {
       this.showUpdateRoomDialog = !this.showUpdateRoomDialog;
+    },
+    toggleUpdateUserProfileDialog() {
+      this.showUpdateUserProfileDialog = !this.showUpdateUserProfileDialog;
     },
 
     async createRoom(roomName: string) {

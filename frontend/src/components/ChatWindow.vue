@@ -23,13 +23,20 @@
           text-color="white"
           class="q-mr-sm overlapping"
         >
-          <!-- <q-img
+          <q-img
             class="round-avatar"
-            v-if="user.avatar_url"
-            :src="url(user.avatar_url)"
-          /> -->
-          <q-icon name="person" />
+            :src="
+              user.avatar_url
+                ? url(user.avatar_url)
+                : '/images/default-avatar.jpg'
+            "
+          />
         </q-avatar>
+
+        <!-- <q-avatar class="q-ma-md">
+          <q-icon v-if="!user?.avatar_url" name="person" />
+          <q-img class="round-avatar" v-else :src="url(user.avatar_url)" />
+        </q-avatar> -->
       </div>
     </div>
 
@@ -46,13 +53,15 @@
         <q-chat-message
           v-for="message in room.messages"
           :key="message.id"
-          avatar="
-            https://cdn.quasar.dev/img/avatar1.jpg
+          :avatar="
+            message.sender?.avatar_url
+              ? url(message.sender?.avatar_url)
+              : '/images/default-avatar.jpg'
           "
           :name="message.sender?.name"
           :sent="message.sender?.id === user.id"
-          :bg-color="message.sender?.name === user.name ? 'primary' : 'grey-4'"
-          :text-color="message.sender?.name === user.name ? 'white' : 'black'"
+          :bg-color="message.sender?.id === user.id ? 'primary' : 'grey-4'"
+          :text-color="message.sender?.id === user.id ? 'white' : 'black'"
           :stamp="message.created_at"
         >
           <div>
@@ -354,4 +363,8 @@ const scrollToBottom = () => {
   position: absolute;
 }
 
+.round-avatar {
+  width: 100%;
+  height: 100%;
+}
 </style>

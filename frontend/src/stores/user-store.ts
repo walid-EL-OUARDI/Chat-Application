@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { api } from 'boot/axios';
 import { User, UserLoginData, UserRegisterData } from 'src/types/index';
 import { AxiosResponse } from 'axios';
+import { useRoomStore } from './room-store';
 
 interface UserState {
   user: User;
@@ -69,6 +70,25 @@ export const useUserStore = defineStore('user', {
           { params: { query } }
         );
         return response.data.users;
+      } catch (err) {
+        throw err;
+      }
+    },
+
+    async updateUserName(name: string) {
+      try {
+        const response: AxiosResponse<{ user: User }> = await api.post(
+          '/profile/username',
+          { name }
+        );
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        this.user = response.data.user;
+        useRoomStore().rooms.forEach((room) => {
+          const index = room.users.findIndex((user) => {
+            user.id === this.user.id;
+          });
+          room.users[index] = this.user;
+        });
       } catch (err) {
         throw err;
       }

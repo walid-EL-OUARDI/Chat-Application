@@ -1,5 +1,6 @@
 <template>
   <q-layout>
+    <UpdateUserProfileDialog />
     <div class="layout-view">
       <div
         class="col justify-between items-between shadow-2 text-grey-8"
@@ -32,10 +33,18 @@
           </q-tabs>
         </div>
 
-        <div align="center" class="cursor-pointer">
+        <div
+          align="center"
+          class="cursor-pointer"
+          @click="roomStore.toggleUpdateUserProfileDialog()"
+        >
           <q-avatar class="q-ma-md">
-            <q-icon v-if="!user?.avatar_url" name="person" />
-            <q-img class="round-avatar" v-else :src="url(user.avatar_url)" />
+            <q-img
+              class="round-avatar"
+              v-if="user?.avatar_url"
+              :src="url(user.avatar_url)"
+            />
+            <q-icon v-else name="person" />
           </q-avatar>
         </div>
       </div>
@@ -57,13 +66,19 @@
               :label="link.title"
               class="text-grey-9"
             />
-            <div align="center" class="cursor-pointer text-grey-9">
+            <div
+              align="center"
+              class="cursor-pointer text-grey-9"
+              @click="roomStore.toggleUpdateUserProfileDialog()"
+            >
               <q-avatar class="q-ma-md">
-                <q-icon v-if="!user?.avatar_url" name="person" />
                 <q-img
                   class="round-avatar"
-                  v-else
-                  :src="url(user.avatar_url)"
+                  :src="
+                    user.avatar_url
+                      ? url(user.avatar_url)
+                      : '/images/default-avatar.jpg'
+                  "
                 />
               </q-avatar>
             </div>
@@ -87,12 +102,15 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '../stores/user-store';
+import { useRoomStore } from '../stores/room-store';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { url } from '../helpers/index';
+import UpdateUserProfileDialog from 'src/components/UpdateUserProfileDialog.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
+const roomStore = useRoomStore();
 const { user } = storeToRefs(userStore);
 const userName = computed(() => user.value?.name);
 

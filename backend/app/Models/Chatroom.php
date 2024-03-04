@@ -18,6 +18,11 @@ class Chatroom extends Model
         return $this->belongsToMany(User::class);
     }
 
+    public function lastMessage()
+    {
+        return $this->hasOne(Message::class)->latest();
+    }
+
     public function messages()
     {
         return $this->hasMany(Message::class);

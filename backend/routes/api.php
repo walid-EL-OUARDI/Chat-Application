@@ -3,10 +3,8 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ChatroomController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use App\Models\Chatroom;
-use App\Models\Message;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //send messages
     Route::post('/chatroom/{chatroom}/messages', [MessageController::class, 'storeMessage']);
+
+    // update user profile
+    Route::post('/profile/avatar', [ProfileController::class, 'updateUserAvatar']);
+    Route::post('/profile/username', [ProfileController::class, 'updateUserName']);
 });
 
 // Route::post('/logout', [AuthController::class, 'logout']);

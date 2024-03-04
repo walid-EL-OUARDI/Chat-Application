@@ -51,15 +51,19 @@
               >
                 <q-avatar
                   v-for="(user, index) in room.users"
-                  :key="user.id"
-                  color="primary"
+                  :key="index"
                   size="50px"
-                  text-color="white"
                   class="overlapping"
                   :style="`left: ${index * 25}px`"
                 >
-                  <!-- <img v-if="image" :src="image" /> -->
-                  <q-icon name="person" />
+                  <q-img
+                    class="round-avatar"
+                    :src="
+                      user.avatar_url
+                        ? url(user.avatar_url)
+                        : '/images/default-avatar.jpg'
+                    "
+                  />
                 </q-avatar>
               </div>
               <q-item-section class="q-ml-md">
@@ -68,8 +72,12 @@
                   >Room Name :
                   <div class="text-body2 q-ml-xs">{{ room.name }}</div>
                 </q-item-label>
-                <q-item-label class="text-grey-8">
-                  No messages yet
+                <q-item-label
+                  class="text-grey-9 row items-center text-weight-bold"
+                  >Last Message :
+                  <div class="text-body2 q-ml-xs">
+                    {{ room.last_message.content }}
+                  </div>
                 </q-item-label>
               </q-item-section>
             </q-item>
@@ -92,6 +100,7 @@ import UpdateChatRoomDialog from './UpdateChatRoomDialog.vue';
 import { storeToRefs } from 'pinia';
 const roomStore = useRoomStore();
 import { useQuasar } from 'quasar';
+import { url } from 'src/helpers';
 const $q = useQuasar();
 const router = useRouter();
 
@@ -140,5 +149,10 @@ const deleteRoom = async (roomId: number) => {
 
 .chat-window {
   flex-grow: 1;
+}
+
+.round-avatar {
+  width: 100%;
+  height: 100%;
 }
 </style>

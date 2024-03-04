@@ -22,7 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'avatat_url'
+        'avatar_url'
     ];
 
     /**
@@ -53,11 +53,6 @@ class User extends Authenticatable
     public function messages()
     {
         return $this->hasMany(Message::class);
-    }
-
-    public function lastMessage()
-    {
-        return $this->hasOne(Message::class)->latest();
     }
 
     public function isInRoom($roomId)
