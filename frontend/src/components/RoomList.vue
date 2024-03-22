@@ -72,7 +72,7 @@
                   >Room Name :
                   <div class="text-body2 q-ml-xs">{{ room.name }}</div>
                 </q-item-label>
-                <q-item-label
+                <q-item-label v-if="room.last_message?.content"
                   class="text-grey-9 row items-center text-weight-bold"
                   >Last Message :
                   <div class="text-body2 q-ml-xs">

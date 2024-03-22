@@ -1,0 +1,64 @@
+services:
+  backend:
+    depends_on:
+      - database
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: chatapp-backend
+    container_name: chatapp-backend
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend:/var/www
+    networks:
+      - chatapp
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: chatapp-frontend
+    container_name: chatapp-frontend
+    ports:
+      - 9000:9000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - chatapp
+
+  database:
+    image: mysql
+    restart: unless-stopped
+    container_name: mysql-database
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    networks:
+      - chatapp
+
+  phpmyadmin:
+    depends_on:
+      - database
+    image: phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - chatapp
+
+volumes:
+  db-data:
+networks:
+  chatapp:
+    driver: bridge

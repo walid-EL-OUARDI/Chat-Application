@@ -23,7 +23,7 @@ class ProfileController extends Controller
         $storageUrl = Storage::url('users_avatars/' . $imageName);
 
 
-        $user->avatat_url = $storageUrl;
+        $user->avatar_url = $storageUrl;
         $user->save();
 
         return response()->json([
