@@ -14,9 +14,9 @@ services:
       - chatapp
 
   database:
-    image: mysql
+    image: mysql:latest
     restart: unless-stopped
-    container_name: mysql-database
+    container_name: database
     volumes:
       - db-data:/var/lib/mysql
     environment:
