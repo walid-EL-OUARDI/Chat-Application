@@ -14,14 +14,13 @@ COPY ./backend .
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 RUN composer install --no-progress --no-interaction
 RUN cp .env.docker .env
-RUN php artisan migrate
 
 # Stage 3: Final image 
 FROM php:8.2-apache
 
 RUN apt-get update
-RUN apt-get install -y unzip git
-# RUN docker-php-ext-install pdo pdo_mysql bcmath
+RUN apt-get install -y unzip git nano
+RUN docker-php-ext-install pdo pdo_mysql bcmath
 
 COPY ports.conf /etc/apache2/ports.conf
 
