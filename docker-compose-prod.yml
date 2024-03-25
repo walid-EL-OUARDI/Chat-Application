@@ -12,7 +12,7 @@ services:
       - "8000:8000" # Port for backend
     volumes:
       - ./frontend:/var/www/frontend:ro
-      - ./frontend/apache-config/frontend.conf /etc/apache2/sites-available/frontend.conf:ro
+      - ./frontend/apache-config/frontend.conf:/etc/apache2/sites-available/frontend.conf:ro
       - ./backend:/var/www/backend:ro
       - ./backend/apache-config/backend.conf:/etc/apache2/sites-available/backend.conf:ro
     networks:
